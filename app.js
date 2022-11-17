@@ -19,7 +19,6 @@ let names = [
     'Gastodon',
     'Girros',
     'Grimalkyne',
-    'Jagras',
     'Kestodon',
     'Mernos',
     'Noios',
@@ -36,7 +35,7 @@ class Monster {
     newMonster() {
         this.name = names[Math.floor(Math.random() * names.length)]
         this.power = Math.random(10) * 100;
-        this.worth = this.power + 50
+        this.value = this.power + 50
     }
 
     imposterStrikes() {
@@ -106,9 +105,9 @@ function gameStart() {
         endLoop = true;
         monstersKilled++
     } else if (monstersKilled >= 5) {
-        monster.power += Math.random(40) * 90
         console.clear()
         monster.newMonster();
+        monster.power += Math.random(140) * 500
         console.log(`-----${player.name} goes for a hunt!-----`);
         monster.imposterStrikes()
         console.log(`${monster.name} attacks!!`);
@@ -120,23 +119,25 @@ function gameStart() {
 
     if (endLoop == true) {
         if (gameEnd == false) {
-
+            //shop function
             function merchant() {
                 console.log('-------Hello there! Welcome to my shop, please have a look below-------');
                 console.log('gold: ' + player.money);
                 console.log('power: ' + Math.floor(player.power));
+                //sets what items are for sale 
                 let itemsForSale = {
                     armor: {
-                        item: 'shield',
-                        defesne: 10,
+                        item: 'armor upgrade',
+                        defense: 10,
                         price: 30
                     },
                     weapon: {
-                        item: 'sword',
+                        item: 'sword upgrade',
                         power: 30,
                         price: 30
                     }
                 }
+                //upgrades as the game progresses
                 if (monstersKilled >= 5) {
                     itemsForSale.weapon.item = 'Wyrm Slayer'
                     itemsForSale.weapon.power = 80
@@ -149,6 +150,7 @@ function gameStart() {
                 console.log('armor: ' + itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
                 console.log('weapon: ' + itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
                 rl.question(`Enter The name of the item you want below, or type none if you don't want any `, (item) => {
+                    //checks which item was purchased
                     function buyItem() {
                         if (item == itemsForSale.weapon.item) {
                             player.power += itemsForSale.weapon.power
@@ -158,6 +160,15 @@ function gameStart() {
                                 endLoop = false;
                                 gameStart()
                             })
+                        } else if (item == itemsForSale.armor.item) {
+                            player.power += itemsForSale.armor.defense
+                            player.money -= itemsForSale.armor.price
+                            console.log('Thanks for your purchase');
+                            rl.question(`Next hunt?`, () => {
+                                endLoop = false;
+                                gameStart()
+                            })
+
                         } else if (item == 'none' || item == 'None') {
                             console.log('Have a nice day! Happy hunting!');
                             rl.question(`Next hunt?`, () => {
@@ -179,6 +190,7 @@ function gameStart() {
                 merchant()
             })
         }
+        //ends the game on a game over
         if (gameEnd == true) {
             rl.question(`Game Over`, () => {
                 rl.close();
@@ -186,7 +198,7 @@ function gameStart() {
         }
     }
 }
-
+//initalizes player name and begins the game
 rl.question(`What is your name? `, name => {
     player.name = name;
     rl.question(`Begin? ${player.name}`, () => {
