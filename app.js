@@ -7,6 +7,7 @@ const rl = require('readline').createInterface({
     output: process.stdout
 });
 let gameEnd = false;
+let endLoop = false;
 
 function probability(n) {
     return Math.random() < n;
@@ -30,20 +31,16 @@ class Monster {
         this.name = name;
         this.power = power;
         this.value = value;
+        this.hp
+        this.armor
     }
 
     newMonster() {
         this.name = names[Math.floor(Math.random() * names.length)]
+        this.hp = Math.random(10) * 100;
+        this.armor = Math.random(0) * 29
         this.power = Math.random(10) * 100;
-        this.value = this.power + 50
-    }
-
-    imposterStrikes() {
-        if (probability(0.002)) {
-            this.name = 'Imposter'
-            this.power = 696969696969696969696969696969
-            console.log('Looking sus!! the imposter strikes!!!!');
-        }
+        this.value = this.power + 10;
     }
 }
 let monster = new Monster('', 0, 0)
@@ -51,35 +48,85 @@ let monster = new Monster('', 0, 0)
 
 
 class Hero {
-    constructor(name, power, job, kills, money, defense) {
-        this.name = name
-        this.power = power
-        this.job = job
-        this.kills = kills
-        this.money = money
+    constructor(name, hp, power, kills, money, defense) {
+        this.name = name;
+        this.hp = hp;
+        this.power = power;
+        this.kills = kills;
+        this.money = money;
         this.defense = defense;
     }
 
-    killMonster() {
-        if (this.power > monster.power - this.defense) {
-            console.log('Congrats you killed the monster!');
-        } else if (this.power < monster.power) {
-            console.log('You have fallen');
-            gameEnd = true;
+   //used during monster hunts to initiate combat 
+    combat() {
+        if(monster.hp > 0){
+            rl.question(`Would you like to Attack, Defend, or try and capture the monster? `, response => {
+                if(response == 'attack'){
+                    console.log(`You attack the ${monster.name}`);
+                        let criticalHit = false;
+                        if(probability(0.10)){
+                            criticalHit = true
+                        }
+    
+                        if(!criticalHit){
+                            monster.hp -= this.power - monster.armor
+                            console.log(`${monster.name} retaliates`);
+                            this.hp -= monster.power - this.defense
+                            this.combat()
+                        } else if(criticalHit){
+                            console.log(`CRITICAL HIT!`);
+                            monster.hp -= this.power
+                            console.log(`${monster.name} retaliates`);
+                            this.hp -= monster.power - this.defense
+                            this.combat()
+                        }
+
+                } else if (response == 'defend'){
+                    console.log(`You enter a ready stance anticipating the ${monster.name}'s next move`);
+                    let parry = false;
+                    if(probability(0.10)){
+                        parry = true
+                    }
+                    if(probability(0.40)){
+                        console.log(`You narrowly escape the ${monster.name}'s attack`);
+                    } else if(parry){
+                        console.log(`You send ${monster.name}'s attack right back at it!!`);
+                        monster.hp -= monster.power - monster.armor 
+                    } else { 
+                        this.defense += 10
+                        console.log(`${monster.name} attacks`);
+                        this.hp -= monster.power - this.defense
+                    }
+                    this.combat()
+                }
+    
+            })
+        
+        } else if(monster.hp <= 0) {
+            console.log(`${monster.name} has been hunted`);
+            player.money += Math.floor(monster.value);
+            endLoop = true;
+            postFight()
+        } else if(player.hp <0){
+            rl.question(`Game Over`, () => {
+                rl.close();
+            })
+        }
         }
     }
-}
+//variables for our Hero
 let hName = 'Greg'
 let hPower = 30
-let hJob = 'hunter'
 let hKills = 0
 let hMoney = 30
 let hDefense = 10
-let player = new Hero(hName, hPower, hJob, hKills, hMoney, hDefense)
+let hHp = 100
+//new hero creation
+let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense)
+//tracker for the monsters killed, will eventually have an object that'll save game data
 let monstersKilled = 0
-
-let endLoop = true;
-
+//game
+let turns = 0;
 function gameStart() {
     //Hunting monsters
     if (monstersKilled < 1) {
@@ -87,38 +134,39 @@ function gameStart() {
         console.log('Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it');
         monster.name = 'Jagras'
         monster.power = 25
+        monster.value = 10
+        monster.armor = 0
+        monster.hp = 60
         console.log(`-----${player.name} goes for a hunt!-----`);
-        monster.imposterStrikes()
         console.log(`${monster.name} attacks!!`);
-        player.killMonster()
-        player.money += Math.floor(monster.value);
-        endLoop = true;
+        player.combat()
         monstersKilled++
     } else if (monstersKilled < 5 && monstersKilled > 0) {
         console.clear()
         monster.newMonster();
         console.log(`-----${player.name} goes for a hunt!-----`);
-        monster.imposterStrikes()
         console.log(`${monster.name} attacks!!`);
-        player.killMonster()
-        player.money += Math.floor(monster.value);
-        endLoop = true;
+        player.combat()
         monstersKilled++
     } else if (monstersKilled >= 5) {
         console.clear()
         monster.newMonster();
         monster.power += Math.random(140) * 500
         console.log(`-----${player.name} goes for a hunt!-----`);
-        monster.imposterStrikes()
         console.log(`${monster.name} attacks!!`);
-        player.killMonster()
-        player.money += Math.floor(monster.value);
-        endLoop = true;
+        player.combat()
         monstersKilled++
     }
 
+}
+
+
+function postFight(){
+
     if (endLoop == true) {
         if (gameEnd == false) {
+            //resets player hp
+            player.hp = 100;
             //shop function
             function merchant() {
                 console.log('-------Hello there! Welcome to my shop, please have a look below-------');
@@ -139,11 +187,11 @@ function gameStart() {
                 }
                 //upgrades as the game progresses
                 if (monstersKilled >= 5) {
-                    itemsForSale.weapon.item = 'Wyrm Slayer'
+                    itemsForSale.weapon.item = 'sword upgrade'
                     itemsForSale.weapon.power = 80
                     itemsForSale.weapon.price = 90
                 } else if (monstersKilled >= 5) {
-                    itemsForSale.weapon.item = 'God Eater'
+                    itemsForSale.weapon.item = 'sword upgrade'
                     itemsForSale.weapon.power = 100
                     itemsForSale.weapon.price = 500
                 }
@@ -168,7 +216,7 @@ function gameStart() {
                                 endLoop = false;
                                 gameStart()
                             })
-
+    
                         } else if (item == 'none' || item == 'None') {
                             console.log('Have a nice day! Happy hunting!');
                             rl.question(`Next hunt?`, () => {
@@ -180,7 +228,7 @@ function gameStart() {
                                 console.clear()
                                 merchant()
                             })
-
+    
                         }
                     }
                     buyItem()
@@ -190,14 +238,12 @@ function gameStart() {
                 merchant()
             })
         }
-        //ends the game on a game over
-        if (gameEnd == true) {
-            rl.question(`Game Over`, () => {
-                rl.close();
-            })
-        }
     }
+
 }
+
+
+
 //initalizes player name and begins the game
 rl.question(`What is your name? `, name => {
     player.name = name;
