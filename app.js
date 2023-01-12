@@ -48,20 +48,23 @@ let monster = new Monster('', 0, 0)
 
 
 class Hero {
-    constructor(name, hp, power, kills, money, defense) {
+    constructor(name, hp, power, kills, money, defense, wUpgrade, dUpgrade, monstersKilled) {
         this.name = name;
         this.hp = hp;
         this.power = power;
         this.kills = kills;
         this.money = money;
         this.defense = defense;
+        this.wUpgrade = wUpgrade;
+        this.dUpgrade = dUpgrade;
+        this.monstersKilled = monstersKilled;
     }
 
    //used during monster hunts to initiate combat 
     combat() {
         if(monster.hp > 0){
             rl.question(`Would you like to Attack, Defend, or try and capture the monster? `, response => {
-                if(response == 'attack'){
+                if(response.toLowerCase() == 'attack'){
                     console.log(`You attack the ${monster.name}`);
                         let criticalHit = false;
                         if(probability(0.10)){
@@ -81,7 +84,7 @@ class Hero {
                             this.combat()
                         }
 
-                } else if (response == 'defend'){
+                } else if (response.toLowerCase() == 'defend'){
                     console.log(`You enter a ready stance anticipating the ${monster.name}'s next move`);
                     let parry = false;
                     if(probability(0.10)){
@@ -98,6 +101,12 @@ class Hero {
                         this.hp -= monster.power - this.defense
                     }
                     this.combat()
+                }else {
+                    rl.question(`Please enter a valid action`, () => {
+                        console.clear()
+                        this.combat()
+                    })
+
                 }
     
             })
@@ -122,14 +131,15 @@ let hMoney = 30
 let hDefense = 10
 let hHp = 100
 //new hero creation
-let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense)
+let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense, 1, 1, 0)
 //tracker for the monsters killed, will eventually have an object that'll save game data
-let monstersKilled = 0
+
 //game
 let turns = 0;
 function gameStart() {
+    player.hp = 100;
     //Hunting monsters
-    if (monstersKilled < 1) {
+    if (player.monstersKilled < 1) {
         console.clear()
         console.log('Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it');
         monster.name = 'Jagras'
@@ -140,22 +150,22 @@ function gameStart() {
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         player.combat()
-        monstersKilled++
-    } else if (monstersKilled < 5 && monstersKilled > 0) {
+        player.monstersKilled++
+    } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
         console.clear()
         monster.newMonster();
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         player.combat()
-        monstersKilled++
-    } else if (monstersKilled >= 5) {
+        player.monstersKilled++
+    } else if (player.monstersKilled >= 5) {
         console.clear()
         monster.newMonster();
         monster.power += Math.random(140) * 500
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         player.combat()
-        monstersKilled++
+        player.monstersKilled++
     }
 
 }
@@ -172,52 +182,45 @@ function postFight(){
                 console.log('-------Hello there! Welcome to my shop, please have a look below-------');
                 console.log('gold: ' + player.money);
                 console.log('power: ' + Math.floor(player.power));
+                console.log('defense: ' + Math.floor(player.defense));
                 //sets what items are for sale 
                 let itemsForSale = {
                     armor: {
                         item: 'armor upgrade',
-                        defense: 10,
-                        price: 30
+                        defense: 10 * player.dUpgrade,
+                        price: 30 * player.dUpgrade
                     },
                     weapon: {
                         item: 'sword upgrade',
-                        power: 30,
-                        price: 30
+                        power: 30 * player.wUpgrade,
+                        price: 30 * player.wUpgrade
                     }
-                }
-                //upgrades as the game progresses
-                if (monstersKilled >= 5) {
-                    itemsForSale.weapon.item = 'sword upgrade'
-                    itemsForSale.weapon.power = 80
-                    itemsForSale.weapon.price = 90
-                } else if (monstersKilled >= 5) {
-                    itemsForSale.weapon.item = 'sword upgrade'
-                    itemsForSale.weapon.power = 100
-                    itemsForSale.weapon.price = 500
                 }
                 console.log('armor: ' + itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
                 console.log('weapon: ' + itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
                 rl.question(`Enter The name of the item you want below, or type none if you don't want any `, (item) => {
                     //checks which item was purchased
                     function buyItem() {
-                        if (item == itemsForSale.weapon.item) {
+                        if (item.toLowerCase() == itemsForSale.weapon.item) {
                             player.power += itemsForSale.weapon.power
                             player.money -= itemsForSale.weapon.price
+                            player.wUpgrade++
                             console.log('Thanks for your purchase');
                             rl.question(`Next hunt?`, () => {
                                 endLoop = false;
                                 gameStart()
                             })
-                        } else if (item == itemsForSale.armor.item) {
-                            player.power += itemsForSale.armor.defense
+                        } else if (item.toLowerCase() == itemsForSale.armor.item) {
+                            player.defense += itemsForSale.armor.defense
                             player.money -= itemsForSale.armor.price
+                            player.dUpgrade++
                             console.log('Thanks for your purchase');
                             rl.question(`Next hunt?`, () => {
                                 endLoop = false;
                                 gameStart()
                             })
     
-                        } else if (item == 'none' || item == 'None') {
+                        } else if (item.toLowerCase() == 'none') {
                             console.log('Have a nice day! Happy hunting!');
                             rl.question(`Next hunt?`, () => {
                                 endLoop = false;
