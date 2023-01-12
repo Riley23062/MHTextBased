@@ -13,6 +13,10 @@ function probability(n) {
     return Math.random() < n;
 }
 
+function randomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
+  }
+
 let names = [
     'Barnos',
     'Gajalaka',
@@ -24,7 +28,8 @@ let names = [
     'Mernos',
     'Noios',
     'Raphinos',
-    'Rathalos'
+    'Rathalos',
+    'Jagras'
 ];
 class Monster {
     constructor(name, power, value) {
@@ -37,10 +42,10 @@ class Monster {
 
     newMonster() {
         this.name = names[Math.floor(Math.random() * names.length)]
-        this.hp = Math.random(10) * 100;
-        this.armor = Math.random(0) * 29
-        this.power = Math.random(10) * 100;
-        this.value = this.power + 10;
+        this.hp = randomNumber(100, 300);
+        this.armor = randomNumber(0, 30);
+        this.power = randomNumber(25, 60);
+        this.value = this.power;
     }
 }
 let monster = new Monster('', 0, 0)
@@ -62,7 +67,8 @@ class Hero {
 
    //used during monster hunts to initiate combat 
     combat() {
-        if(monster.hp > 0){
+        console.log('Your hp is ' + this.hp);
+        if(monster.hp > 0 && this.hp > 0){
             rl.question(`Would you like to Attack, Defend, or try and capture the monster? `, response => {
                 if(response.toLowerCase() == 'attack'){
                     console.log(`You attack the ${monster.name}`);
@@ -96,9 +102,8 @@ class Hero {
                         console.log(`You send ${monster.name}'s attack right back at it!!`);
                         monster.hp -= monster.power - monster.armor 
                     } else { 
-                        this.defense += 10
                         console.log(`${monster.name} attacks`);
-                        this.hp -= monster.power - this.defense
+                        this.hp -= monster.power - this.defense + 10
                     }
                     this.combat()
                 }else {
@@ -116,7 +121,7 @@ class Hero {
             player.money += Math.floor(monster.value);
             endLoop = true;
             postFight()
-        } else if(player.hp <0){
+        } else if(player.hp <= 0){
             rl.question(`Game Over`, () => {
                 rl.close();
             })
@@ -137,7 +142,6 @@ let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense, 1, 1, 0)
 //game
 let turns = 0;
 function gameStart() {
-    player.hp = 100;
     //Hunting monsters
     if (player.monstersKilled < 1) {
         console.clear()
@@ -161,7 +165,7 @@ function gameStart() {
     } else if (player.monstersKilled >= 5) {
         console.clear()
         monster.newMonster();
-        monster.power += Math.random(140) * 500
+        monster.power += randomNumber(10, 60)
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         player.combat()
@@ -187,17 +191,17 @@ function postFight(){
                 let itemsForSale = {
                     armor: {
                         item: 'armor upgrade',
-                        defense: 10 * player.dUpgrade,
+                        defense: 10,
                         price: 30 * player.dUpgrade
                     },
                     weapon: {
-                        item: 'sword upgrade',
-                        power: 30 * player.wUpgrade,
+                        item: 'weapon upgrade',
+                        power: 30,
                         price: 30 * player.wUpgrade
                     }
                 }
-                console.log('armor: ' + itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
-                console.log('weapon: ' + itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
+                console.log(itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
+                console.log(itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
                 rl.question(`Enter The name of the item you want below, or type none if you don't want any `, (item) => {
                     //checks which item was purchased
                     function buyItem() {
@@ -206,20 +210,15 @@ function postFight(){
                             player.money -= itemsForSale.weapon.price
                             player.wUpgrade++
                             console.log('Thanks for your purchase');
-                            rl.question(`Next hunt?`, () => {
-                                endLoop = false;
-                                gameStart()
-                            })
+                            console.clear()
+                            merchant()
                         } else if (item.toLowerCase() == itemsForSale.armor.item) {
                             player.defense += itemsForSale.armor.defense
                             player.money -= itemsForSale.armor.price
                             player.dUpgrade++
                             console.log('Thanks for your purchase');
-                            rl.question(`Next hunt?`, () => {
-                                endLoop = false;
-                                gameStart()
-                            })
-    
+                            console.clear()
+                            merchant()
                         } else if (item.toLowerCase() == 'none') {
                             console.log('Have a nice day! Happy hunting!');
                             rl.question(`Next hunt?`, () => {
