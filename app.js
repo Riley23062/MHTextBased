@@ -44,11 +44,11 @@ class Monster {
         this.name = names[Math.floor(Math.random() * names.length)]
         this.hp = randomNumber(100, 300);
         this.armor = randomNumber(0, 30);
-        this.power = randomNumber(25, 60);
+        this.power = randomNumber(25, 40);
         this.value = this.power;
     }
 }
-let monster = new Monster('', 0, 0)
+let monster = new Monster('', 0, 0, 0, 0)
 
 
 
@@ -81,31 +81,40 @@ class Hero {
                             monster.hp -= this.power - monster.armor
                             console.log(`${monster.name} retaliates`);
                             this.hp -= monster.power - this.defense
-                            this.combat()
                         } else if(criticalHit){
                             console.log(`CRITICAL HIT!`);
                             monster.hp -= this.power
                             console.log(`${monster.name} retaliates`);
                             this.hp -= monster.power - this.defense
-                            this.combat()
                         }
-
+                        rl.question(`Next Turn?`, () => {
+                            console.clear()
+                            this.combat()
+                        })
+                        
                 } else if (response.toLowerCase() == 'defend'){
                     console.log(`You enter a ready stance anticipating the ${monster.name}'s next move`);
                     let parry = false;
-                    if(probability(0.10)){
+                    if(probability(0.35)){
                         parry = true
                     }
-                    if(probability(0.40)){
+                    if(probability(0.50)){
                         console.log(`You narrowly escape the ${monster.name}'s attack`);
                     } else if(parry){
                         console.log(`You send ${monster.name}'s attack right back at it!!`);
                         monster.hp -= monster.power - monster.armor 
-                    } else { 
+                    } else if(probability(0.40)){
+                        console.log('You manage to find time to recover some strength and enhance your body with magic');
+                        console.log('+20 hp');
+                        this.hp += 20;
+                    }else{ 
                         console.log(`${monster.name} attacks`);
-                        this.hp -= monster.power - this.defense + 10
+                        this.hp -= monster.power - this.defense + 20
                     }
-                    this.combat()
+                    rl.question(`Next Turn?`, () => {
+                        console.clear()
+                        this.combat()
+                    })
                 }else {
                     rl.question(`Please enter a valid action`, () => {
                         console.clear()
@@ -120,6 +129,7 @@ class Hero {
             console.log(`${monster.name} has been hunted`);
             player.money += Math.floor(monster.value);
             endLoop = true;
+            this.monstersKilled++
             postFight()
         } else if(player.hp <= 0){
             rl.question(`Game Over`, () => {
@@ -129,11 +139,11 @@ class Hero {
         }
     }
 //variables for our Hero
-let hName = 'Greg'
-let hPower = 30
+let hName = ''
+let hPower = 40
 let hKills = 0
 let hMoney = 30
-let hDefense = 10
+let hDefense = 15
 let hHp = 100
 //new hero creation
 let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense, 1, 1, 0)
@@ -141,6 +151,7 @@ let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense, 1, 1, 0)
 
 //game
 let turns = 0;
+let storyEvent1 = false;
 function gameStart() {
     //Hunting monsters
     if (player.monstersKilled < 1) {
@@ -154,14 +165,26 @@ function gameStart() {
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         player.combat()
-        player.monstersKilled++
     } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
-        console.clear()
-        monster.newMonster();
-        console.log(`-----${player.name} goes for a hunt!-----`);
-        console.log(`${monster.name} attacks!!`);
-        player.combat()
-        player.monstersKilled++
+        if(player.monstersKilled == 4){
+            console.clear()
+            console.log("You approach the den of a beast unlike any other you've seen.");
+            console.log("As you approach it's wings unfurl in grandiose fashion");
+            console.log("The legendary monster SkyBreaker approaches!!!!!!!");
+            monster.name = 'SkyBreaker'
+            monster.power = 50
+            monster.hp = 300
+            monster.armor = 0
+            monster.value = 100
+            storyEvent1 = true;
+            player.combat()
+        } else {
+            console.clear()
+            monster.newMonster();
+            console.log(`-----${player.name} goes for a hunt!-----`);
+            console.log(`${monster.name} attacks!!`);
+            player.combat()
+        }
     } else if (player.monstersKilled >= 5) {
         console.clear()
         monster.newMonster();
@@ -179,8 +202,15 @@ function postFight(){
 
     if (endLoop == true) {
         if (gameEnd == false) {
+            if(player.monstersKilled == 5){
+                console.log("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
+                console.log("Your max hp increases by 100 and your weapon and armor improve");
+                hHp += 100
+                player.power += 60
+                player.defense += 20
+            }
             //resets player hp
-            player.hp = 100;
+            player.hp = hHp;
             //shop function
             function merchant() {
                 console.log('-------Hello there! Welcome to my shop, please have a look below-------');
@@ -202,24 +232,38 @@ function postFight(){
                 }
                 console.log(itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
                 console.log(itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
-                rl.question(`Enter The name of the item you want below, or type none if you don't want any `, (item) => {
+                rl.question(`Enter The name of the item you want below, or type leave to exit the shop `, (item) => {
                     //checks which item was purchased
                     function buyItem() {
                         if (item.toLowerCase() == itemsForSale.weapon.item) {
-                            player.power += itemsForSale.weapon.power
-                            player.money -= itemsForSale.weapon.price
-                            player.wUpgrade++
-                            console.log('Thanks for your purchase');
-                            console.clear()
-                            merchant()
+                            if(itemsForSale.weapon.price > player.money){
+                                rl.question(`Merchant: Sorry bud you ain't got enough money`, () => {
+                                    console.clear()
+                                    merchant()
+                                })
+                            } else {
+                                player.power += itemsForSale.weapon.power
+                                player.money -= itemsForSale.weapon.price
+                                player.wUpgrade++
+                                console.log('Thanks for your purchase');
+                                console.clear()
+                                merchant()
+                            }
                         } else if (item.toLowerCase() == itemsForSale.armor.item) {
+                                if(itemsForSale.armor.price > player.money){
+                                    rl.question(`Merchant: Sorry bud you ain't got enough money`, () => {
+                                        console.clear()
+                                        merchant()
+                                    })
+                                } else {
                             player.defense += itemsForSale.armor.defense
                             player.money -= itemsForSale.armor.price
                             player.dUpgrade++
                             console.log('Thanks for your purchase');
                             console.clear()
                             merchant()
-                        } else if (item.toLowerCase() == 'none') {
+                                }
+                        } else if (item.toLowerCase() == 'leave') {
                             console.log('Have a nice day! Happy hunting!');
                             rl.question(`Next hunt?`, () => {
                                 endLoop = false;
@@ -230,11 +274,10 @@ function postFight(){
                                 console.clear()
                                 merchant()
                             })
-    
-                        }
                     }
-                    buyItem()
-                })
+                }
+                buyItem()
+            })
             }
             rl.question(`Enter the shop by hitting enter...`, answer => {
                 merchant()
@@ -247,6 +290,7 @@ function postFight(){
 
 
 //initalizes player name and begins the game
+console.log("DISCLAIMER: Monster Hunter and all associated products are owned by Capcom this a fan project that merely uses the monster's names");
 rl.question(`What is your name? `, name => {
     player.name = name;
     rl.question(`Begin? ${player.name}`, () => {
