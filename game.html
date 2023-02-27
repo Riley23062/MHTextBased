@@ -1,13 +1,62 @@
-//initalize node modules
-const {
-    clear
-} = require('console');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHTextBased</title>
+</head>
+<style>
+    canvas {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
 
-const rl = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-//loop and gameEnd variables
+body {
+text-align: center;
+}
+</style>
+<body">
+    <div id="images" style="display:none;">
+        <img id="source" src="images/snk-grant.gif"  width="300" height="227" />
+    </div>
+    <div id="mygame" class="mygame">
+        <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3;"></canvas>
+        <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
+        <div id="gameStart">
+            <input type="text" id="name">
+            <button id type="button" onclick="makePlayer()">Enter Name</button>
+            </div>
+            <div id="combat">
+            <p id="status"></p>
+            <p id="action"></p>
+            <button id="attack" onclick="player.attack()" type="button">Attack</button>
+            <button id="defend" onclick="player.defend()" type="button">Defend</button>
+            <button id="nextTurn" onclick="combat()" type="button" disabled>Next Turn</button>
+            </div>
+    </div>
+</body>
+<script>
+function display(){
+    let start = document.getElementById('gameStart')
+    let combat = document.getElementById('combat')
+    start.style.display = 'block'
+    combat.style.display = 'none'
+}
+document.onload = display()
+    window.onload = function() {
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const image = document.getElementById("source");
+  ctx.drawImage(image, 60,300);
+    }
+</script>
+
+<script>
+    //loop and gameEnd variables
 //used for transitioning scenes 
 let gameEnd = false;
 let endLoop = false;
@@ -62,137 +111,139 @@ let monster = new Monster('', 0, 0, 0, 0)
 //creates the player object
 //all parameters are logged in here
 class Hero {
-    constructor(name, hp, power, kills, money, defense, wUpgrade, dUpgrade, monstersKilled) {
+    constructor(name, hp, power, money, defense, wUpgrade, dUpgrade, monstersKilled) {
         this.name = name;
         this.hp = hp;
         this.power = power;
-        this.kills = kills;
         this.money = money;
         this.defense = defense;
         this.wUpgrade = wUpgrade;
         this.dUpgrade = dUpgrade;
         this.monstersKilled = monstersKilled;
     }
-
-    //used during monster hunts to initiate combat 
-    combat() {
-        console.log('Your hp is ' + this.hp);
-        if (monster.hp > 0 && this.hp > 0) {
-            //allows the user to pick between two options by typing one into the console
-            //each option uses random chance events to determine whether or not something will happen
-            //it loops without actually being a loop
-            //loops mess with rl.question and aren't needed to achieve our desired effect 
-            rl.question(`Would you like to Attack or Defend? `, response => {
-                //attacking only has 1 random chance event
-                //critical hits should be rare
-                if (response.toLowerCase() == 'attack') {
-                    console.log(`You attack the ${monster.name}`);
-                    let criticalHit = false;
-                    if (probability(0.10)) {
-                        criticalHit = true
-                    }
-
-                    if (!criticalHit) {
-                        monster.hp -= this.power - monster.armor
-                        console.log(`${monster.name} retaliates`);
-                        this.hp -= monster.power - this.defense
-                    } else if (criticalHit) {
-                        console.log(`CRITICAL HIT!`);
-                        monster.hp -= this.power
-                        console.log(`${monster.name} retaliates`);
-                        this.hp -= monster.power - this.defense
-                    }
-                    rl.question(`Next Turn?`, () => {
-                        console.clear()
-                        this.combat()
-                    })
-
-                } else if (response.toLowerCase() == 'defend') {
-                    //this uses if statements to determine if a random event will occur
-                    //add or edit these to make combat more enthralling
-                    console.log(`You enter a ready stance anticipating the ${monster.name}'s next move`);
-                    let parry = false;
-                    if (probability(0.35)) {
-                        parry = true
-                    }
-                    if (probability(0.50)) {
-                        console.log(`You narrowly escape the ${monster.name}'s attack`);
-                    } else if (parry) {
-                        console.log(`You send ${monster.name}'s attack right back at it!!`);
-                        monster.hp -= monster.power - monster.armor
-                    } else if (probability(0.40)) {
-                        //hp should always stack, unlless it's with a potion
-                        console.log('You manage to find time to recover some strength and enhance your body with magic');
-                        console.log('+20 hp');
-                        this.hp += 20;
-                    } else {
-                        console.log(`${monster.name} attacks`);
-                        this.hp -= monster.power - this.defense + 20
-                    }
-                    //makes it so that you don't have a long line for each turn
-                    rl.question(`Next Turn?`, () => {
-                        console.clear()
-                        this.combat()
-                    })
-                } else {
-                    rl.question(`Please enter a valid action`, () => {
-                        console.clear()
-                        this.combat()
-                    })
-
-                }
-
-            })
+    
+    
+     attack(){
+        let nextTurn = document.getElementById('nextTurn')
+        let attackBut = document.getElementById('attack')
+        let defendBut = document.getElementById('defend')
+        action.innerHTML = `You attack the ${monster.name}`
+        let criticalHit = false;
+        if (probability(0.10)) {
+            criticalHit = true
+        }
+    
+        if (!criticalHit) {
+            monster.hp -= this.power - monster.armor
+            action.innerHTML += `<br>${monster.name} retaliates`;
+            this.hp -= monster.power - this.defense
+        } else if (criticalHit) {
+         action.innerHTML += `<br>CRITICAL HIT!` ;
+         monster.hp -= this.power
+         action.innerHTML += `<br>${monster.name} retaliates`;
+         this.hp -= monster.power - this.defense
+        }
+        attackBut.disabled = true;
+        defendBut.disabled = true;
+        nextTurn.disabled = false;
+    }
+    
+    defend(){
+                 let nextTurn = document.getElementById('nextTurn')
+                 let attackBut = document.getElementById('attack')
+                  let defendBut = document.getElementById('defend')
+                  //this uses if statements to determine if a random event will occur
+                  //add or edit these to make combat more enthralling
+                  action.innerHTML = `You enter a ready stance anticipating the ${monster.name}'s next move`;
+                  let parry = false;
+                  if (probability(0.35)) {
+                      parry = true
+                  }
+                  if (probability(0.50)) {
+                    action.innerHTML += `<br>You narrowly escape the ${monster.name}'s attack`;
+                  } else if (parry) {
+                    action.innerHTML = `<br>You send ${monster.name}'s attack right back at it!!`;
+                      monster.hp -= monster.power - monster.armor
+                  } else if (probability(0.40)) {
+                      //hp should always stack, unlless it's with a potion
+                      action.innerHTML += '<br>You manage to find time to recover some strength and enhance your body with magic';
+                      action.innerHTML += '<br>+20 hp';
+                      this.hp += 20;
+                  } else {
+                    action.innerHTML += `<br>${monster.name} attacks`;
+                      this.hp -= monster.power - this.defense + 20
+                  }
+                  attackBut.disabled = true;
+                  defendBut.disabled = true;
+                  nextTurn.disabled = false;
+              }
+}
+//used during monster hunts to initiate combat 
+function combat() {
+    let start = document.getElementById('gameStart')
+    let combat = document.getElementById('combat')
+    let nextTurn = document.getElementById('nextTurn')
+    let attackBut = document.getElementById('attack')
+    let defendBut = document.getElementById('defend')
+    nextTurn.disabled = true
+    defendBut.disabled = false;
+    attackBut.disabled = false;
+    start.style.display = 'none'
+    combat.style.display = 'block'
+    let status = document.getElementById('status')
+    let action = document.getElementById('action')
+        status.innerHTML = 'Your hp is ' + player.hp
+        let message = document.getElementById('message')
+        if (monster.hp > 0 && player.hp > 0) {
+            status.innerHTML += `<br>Would you like to Attack or Defend? `
             //checks who dies first
             //monster will always die first
         } else if (monster.hp <= 0) {
-            console.log(`${monster.name} has been hunted`);
+           message.innerHTML = `${monster.name} has been hunted`;
+           status.innerHTML = ''
+           action.innerHTML = ''
             player.money += Math.floor(monster.value);
             endLoop = true;
-            this.monstersKilled++
+            player.monstersKilled++
             postFight()
         } else if (player.hp <= 0) {
-            rl.question(`Game Over`, () => {
-                rl.close();
-            })
+            alert('Game Over')
         }
     }
+    let player = new Hero('', 0, 0, 0, 0, 1, 1, 0)
+function makePlayer(){
+    player.hp = 100
+    player.power = 40
+    player.money = 30
+    player.defense = 15
+    player.name = document.getElementById('name').value
+
+
+    gameStart()
+
 }
-//variables for our Hero
-let hName = ''
-let hPower = 40
-let hKills = 0
-let hMoney = 30
-let hDefense = 15
-let hHp = 100
-//new hero creation
-let player = new Hero(hName, hHp, hPower, hKills, hMoney, hDefense, 1, 1, 0)
-//tracker for the monsters killed, will eventually have an object that'll save game data
 
 //game loop variables
 let turns = 0;
 let storyEvent1 = false;
 
 function gameStart() {
+    let message = document.getElementById('message')
     //Hunting monsters
     //diffculty scales 
     //story progression follows player.monstersKilled
     if (player.monstersKilled < 1) {
-        console.clear()
-        console.log('Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it');
+        message.innerHTML = 'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
         monster.name = 'Jagras'
         monster.power = 25
         monster.value = 10
         monster.armor = 0
         monster.hp = 60
-        console.log(`-----${player.name} goes for a hunt!-----`);
-        console.log(`${monster.name} attacks!!`);
-        player.combat()
+        combat()
     } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
         //story event 1
         //balance the boss to make it challengeing and fun 
         if (player.monstersKilled == 4) {
-            console.clear()
             console.log("You approach the den of a beast unlike any other you've seen.");
             console.log("As you approach it's wings unfurl in grandiose fashion");
             console.log("The legendary monster SkyBreaker approaches!!!!!!!");
@@ -202,22 +253,20 @@ function gameStart() {
             monster.armor = 0
             monster.value = 100
             storyEvent1 = true;
-            player.combat()
+           combat()
         } else {
-            console.clear()
             monster.newMonster();
             console.log(`-----${player.name} goes for a hunt!-----`);
             console.log(`${monster.name} attacks!!`);
-            player.combat()
+            combat()
         }
         //raises the monsters stats to scale with the player
     } else if (player.monstersKilled >= 5) {
-        console.clear()
         monster.newMonster();
         monster.power += randomNumber(10, 60)
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
-        player.combat()
+        combat()
         player.monstersKilled++
     }
 
@@ -317,15 +366,5 @@ function postFight() {
     }
 
 }
-
-
-
-//initalizes player name and begins the game
-//disclaimer is to prevent a lawsuit
-console.log("DISCLAIMER: Monster Hunter and all associated products are owned by Capcom this a fan project that merely uses the monster's names");
-rl.question(`What is your name? `, name => {
-    player.name = name;
-    rl.question(`Begin? ${player.name}`, () => {
-        gameStart()
-    })
-})
+</script>
+</html>
