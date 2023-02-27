@@ -281,7 +281,7 @@ function postFight() {
             if (player.monstersKilled == 5) {
                 console.log("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
                 console.log("Your max hp increases by 100 and your weapon and armor improve");
-                hHp += 100
+                player.hp += 100
                 player.power += 60
                 player.defense += 20
             }
@@ -289,7 +289,7 @@ function postFight() {
             player.hp = 100;
             //shop function
             function merchant() {
-                'Shopkeep: Hello there! Welcome to my shop, please have a look below-------'
+                message.innerHTML ='Shopkeep: Hello there! Welcome to my shop, please have a look.'
                 'gold: ' + player.money
                 'power: ' + Math.floor(player.power)
                 'defense: ' + Math.floor(player.defense)
@@ -315,10 +315,7 @@ function postFight() {
                     function buyItem() {
                         if (item.toLowerCase() == itemsForSale.weapon.item) {
                             if (itemsForSale.weapon.price > player.money) {
-                                rl.question(`Merchant: Sorry bud you ain't got enough money`, () => {
-                                    console.clear()
-                                    merchant()
-                                })
+                               
                             } else {
                                 player.power += itemsForSale.weapon.power
                                 player.money -= itemsForSale.weapon.price
@@ -329,10 +326,6 @@ function postFight() {
                             }
                         } else if (item.toLowerCase() == itemsForSale.armor.item) {
                             if (itemsForSale.armor.price > player.money) {
-                                rl.question(`Merchant: Sorry bud you ain't got enough money`, () => {
-                                    console.clear()
-                                    merchant()
-                                })
                             } else {
                                 player.defense += itemsForSale.armor.defense
                                 player.money -= itemsForSale.armor.price
@@ -343,18 +336,11 @@ function postFight() {
                             }
                         } else if (item.toLowerCase() == 'leave') {
                             console.log('Have a nice day! Happy hunting!');
-                            rl.question(`Next hunt?`, () => {
-                                endLoop = false;
-                                gameStart()
-                            })
                         } else {
                         }
                     }
                     buyItem()
             }
-            rl.question(`Enter the shop by hitting enter...`, answer => {
-                merchant()
-            })
         }
     }
 
