@@ -57,7 +57,7 @@ const image = document.getElementById("source");
 
 <script>
     //loop and gameEnd variables
-//used for transitioning scenes 
+//used for transitioning scenes
 let gameEnd = false;
 let endLoop = false;
 
@@ -121,8 +121,8 @@ class Hero {
         this.dUpgrade = dUpgrade;
         this.monstersKilled = monstersKilled;
     }
-    
-    
+
+
      attack(){
         let nextTurn = document.getElementById('nextTurn')
         let attackBut = document.getElementById('attack')
@@ -132,7 +132,7 @@ class Hero {
         if (probability(0.10)) {
             criticalHit = true
         }
-    
+
         if (!criticalHit) {
             monster.hp -= this.power - monster.armor
             action.innerHTML += `<br>${monster.name} retaliates`;
@@ -147,7 +147,7 @@ class Hero {
         defendBut.disabled = true;
         nextTurn.disabled = false;
     }
-    
+
     defend(){
                  let nextTurn = document.getElementById('nextTurn')
                  let attackBut = document.getElementById('attack')
@@ -178,7 +178,7 @@ class Hero {
                   nextTurn.disabled = false;
               }
 }
-//used during monster hunts to initiate combat 
+//used during monster hunts to initiate combat
 function combat() {
     let start = document.getElementById('gameStart')
     let combat = document.getElementById('combat')
@@ -230,7 +230,7 @@ let storyEvent1 = false;
 function gameStart() {
     let message = document.getElementById('message')
     //Hunting monsters
-    //diffculty scales 
+    //diffculty scales
     //story progression follows player.monstersKilled
     if (player.monstersKilled < 1) {
         message.innerHTML = 'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
@@ -242,7 +242,7 @@ function gameStart() {
         combat()
     } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
         //story event 1
-        //balance the boss to make it challengeing and fun 
+        //balance the boss to make it challengeing and fun
         if (player.monstersKilled == 4) {
             console.log("You approach the den of a beast unlike any other you've seen.");
             console.log("As you approach it's wings unfurl in grandiose fashion");
@@ -267,7 +267,6 @@ function gameStart() {
         console.log(`-----${player.name} goes for a hunt!-----`);
         console.log(`${monster.name} attacks!!`);
         combat()
-        player.monstersKilled++
     }
 
 }
@@ -287,14 +286,14 @@ function postFight() {
                 player.defense += 20
             }
             //resets player hp
-            player.hp = hHp;
+            player.hp = 100;
             //shop function
             function merchant() {
-                console.log('-------Hello there! Welcome to my shop, please have a look below-------');
-                console.log('gold: ' + player.money);
-                console.log('power: ' + Math.floor(player.power));
-                console.log('defense: ' + Math.floor(player.defense));
-                //sets what items are for sale 
+                'Shopkeep: Hello there! Welcome to my shop, please have a look below-------'
+                'gold: ' + player.money
+                'power: ' + Math.floor(player.power)
+                'defense: ' + Math.floor(player.defense)
+                //sets what items are for sale
                 //scales with the player's purchases
                 let itemsForSale = {
                     armor: {
@@ -310,7 +309,6 @@ function postFight() {
                 }
                 console.log(itemsForSale.armor.item + ' Grants ' + itemsForSale.armor.defense + ' defense' + ' cost: ' + itemsForSale.armor.price);
                 console.log(itemsForSale.weapon.item + ' Grants ' + itemsForSale.weapon.power + ' power' + ' cost: ' + itemsForSale.weapon.price);
-                rl.question(`Enter The name of the item you want below, or type leave to exit the shop `, (item) => {
                     //checks which item was purchased
                     //if the player doesn't have enough money they can't buy any "Sorry link I don't give credit"
                     //works fine, but will need to build on it when items are added
@@ -350,14 +348,9 @@ function postFight() {
                                 gameStart()
                             })
                         } else {
-                            rl.question(`Please enter a valid item`, () => {
-                                console.clear()
-                                merchant()
-                            })
                         }
                     }
                     buyItem()
-                })
             }
             rl.question(`Enter the shop by hitting enter...`, answer => {
                 merchant()
