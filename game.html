@@ -19,11 +19,13 @@
     body {
         text-align: center;
     }
+
 </style>
 
 <body>
-    <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3;"></canvas>
-    <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
+        <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3;"></canvas>
+        <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
+        <p style="text-align: center;" id="sMessage"></p>
     <div id="gameStart">
         <input type="text" id="name">
         <button id type="button" onclick="makePlayer()">Enter Name</button>
@@ -49,42 +51,57 @@
 </body>
 
 <script>
-const grantIdle = new Image();
-grantIdle.src = "images/grant-idle.png";
-const frameWidth = 90;
-const frameHeight = 124;
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-ctx.drawImage(grantIdle, 0, 0);
-
-let currentFrame = 0;
-
-setInterval(() => {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw the current frame
-  ctx.drawImage(
-    grantIdle,
-    currentFrame * frameWidth,
-    0,
-    frameWidth,
-    frameHeight,
-    0,
-    0,
-    frameWidth,
-    frameHeight
-  );
-
-  // Increment the current frame
-  currentFrame++;
-
-  // Reset to the first frame if we have reached the end of the sprite sheet
-  if (currentFrame >= grantIdle.width / frameWidth) {
-    currentFrame = 0;
-  }
-}, 60);
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let intervalId = ''
+  function Anim(width, height, src, loop, x, y){
+        const grantIdle = new Image();
+        grantIdle.src = src;
+        const frameWidth = width;
+        const frameHeight = height;
+        
+        
+        let currentXFrame = 0;
+        let currentYFrame = 0;
+          let loopAnim = setInterval(() => {
+              // Clear the canvas
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+              // Draw the current frame
+              ctx.drawImage(
+                grantIdle,
+                currentXFrame * frameWidth,
+                currentYFrame * frameHeight,
+                frameWidth,
+                frameHeight,
+                x,
+                y,
+                frameWidth,
+                frameHeight
+              );
+            
+              // Increment the current frame
+              currentXFrame++;
+              // Reset to the first frame if we have reached the end of the sprite sheet
+              if (currentXFrame >= grantIdle.width / frameWidth) {
+                  if(currentYFrame == (grantIdle.height / frameHeight) -1){
+                    if(loop == true){
+                        currentXFrame = 0
+                        currentYFrame = 0
+                    } else {
+                        currentXFrame = 0
+                        currentYFrame = 0
+                        clearInterval(loopAnim);
+                         Anim(91, 122, "images/grant-idle.png", true, 150, 350)
+                    }
+                  } else {
+                      currentXFrame = 0
+                      currentYFrame++
+                    }
+              }
+            }, 60);
+            intervalId = loopAnim
+    }
 </script>
 
 
@@ -97,6 +114,7 @@ setInterval(() => {
         start.style.display = 'block'
         combat.style.display = 'none'
         shop.style.display = 'none'
+        Anim(91, 122, "images/grant-idle.png", true, 150, 350)
     }
     document.onload = display()
 </script>
@@ -146,7 +164,7 @@ setInterval(() => {
             this.name = names[Math.floor(Math.random() * names.length)]
             this.hp = randomNumber(100, 300);
             this.armor = randomNumber(0, 30);
-            this.power = randomNumber(25, 40);
+            this.power = randomNumber(36, 60);
             this.value = this.power;
         }
     }
@@ -160,6 +178,7 @@ setInterval(() => {
         constructor(name, hp, power, money, defense, wUpgrade, dUpgrade, monstersKilled) {
             this.name = name;
             this.hp = hp;
+            this.maxHP = hp;
             this.power = power;
             this.money = money;
             this.defense = defense;
@@ -180,10 +199,14 @@ setInterval(() => {
             }
 
             if (!criticalHit) {
+                clearInterval(intervalId);
+                Anim(324, 193, "images/grant-attack.png", false, 70, 294)
                 monster.hp -= this.power - monster.armor
                 action.innerHTML += `<br>${monster.name} retaliates`;
                 this.hp -= monster.power - this.defense
             } else if (criticalHit) {
+                clearInterval(intervalId);
+                Anim(304, 224, "images/grant-crit.png", false, 90, 264)
                 action.innerHTML += `<br>CRITICAL HIT!`;
                 monster.hp -= this.power
                 action.innerHTML += `<br>${monster.name} retaliates`;
@@ -195,6 +218,8 @@ setInterval(() => {
         }
 
         defend() {
+            clearInterval(intervalId);
+            Anim(137, 115, "images/grant-block.png", false, 150, 380)
             let nextTurn = document.getElementById('nextTurn')
             let attackBut = document.getElementById('attack')
             let defendBut = document.getElementById('defend')
@@ -227,6 +252,7 @@ setInterval(() => {
     }
     //used during monster hunts to initiate combat
     function combat() {
+        sMessage.innerHTML = ''
         let start = document.getElementById('gameStart')
         let combat = document.getElementById('combat')
         let nextTurn = document.getElementById('nextTurn')
@@ -242,7 +268,7 @@ setInterval(() => {
         let status = document.getElementById('status')
         let action = document.getElementById('action')
         action.innerHTML = '';
-        status.innerHTML = 'Your hp is ' + player.hp
+        status.innerHTML = 'Your hp is ' + player.hp + '/' + player.maxHP
         let message = document.getElementById('message')
         if (monster.hp > 0 && player.hp > 0) {
             status.innerHTML += `<br>Would you like to Attack or Defend? `
@@ -268,6 +294,7 @@ setInterval(() => {
 
     function makePlayer() {
         player.hp = 100
+        player.maxHP = 100
         player.power = 40
         player.money = 30
         player.defense = 15
@@ -307,7 +334,7 @@ setInterval(() => {
                 message.innerHTML += "<br>The legendary monster SkyBreaker approaches!!!!!!!"
                 monster.name = 'SkyBreaker'
                 monster.power = 50
-                monster.hp = 300
+                monster.hp = 500
                 monster.armor = 0
                 monster.value = 100
                 storyEvent1 = true;
@@ -321,7 +348,9 @@ setInterval(() => {
             //raises the monsters stats to scale with the player
         } else if (player.monstersKilled >= 5) {
             monster.newMonster();
-            monster.power += randomNumber(10, 60)
+            monster.power += randomNumber(60, 80)
+            monster.hp += randomNumber(400, 600)
+            monster.armor += randomNumber(10, 40)
             message.innerHTML = `-----${player.name} goes for a hunt!-----`
             message.innerHTML += `<br>${monster.name} attacks!!`
             combat()
@@ -349,18 +378,19 @@ setInterval(() => {
         let stats = document.getElementById('stats')
         //only active after the first story event
         if (player.monstersKilled == 5) {
-            console.log("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
-            console.log("Your max hp increases by 100 and your weapon and armor improve");
-            player.hp += 100
+            sMessage.innerHTML =("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
+            sMessage.innerHTML += ("<br>Your max hp increases by 100 and your weapon and armor improve");
+            player.maxHP += 100
             player.power += 60
             player.defense += 20
+            merchant()
         } else {
             merchant()
         }
-        //resets player hp
-        player.hp = 100;
         //shop function
         function merchant() {
+            //resets player hp
+            player.hp = player.maxHP;
             let start = document.getElementById('gameStart')
             let combat = document.getElementById('combat')
             let shop = document.getElementById('shop')
