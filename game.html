@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHTextBased</title>
+</head>
+<style>
+    canvas {
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+
+    body {
+        text-align: center;
+    }
+
+</style>
+
+<body>
+        <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3;"></canvas>
+        <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
+        <p style="text-align: center;" id="sMessage"></p>
+    <div id="gameStart">
+        <input type="text" id="name">
+        <button id type="button" onclick="makePlayer()">Enter Name</button>
+    </div>
+
+    <div id="combat">
+        <p id="status"></p>
+        <p id="action"></p>
+        <button id="attack" onclick="player.attack()" type="button">Attack</button>
+        <button id="defend" onclick="player.defend()" type="button">Defend</button>
+        <button id="nextTurn" onclick="combat()" type="button" disabled>Next Turn</button>
+    </div>
+
+    <div id="shop">
+        <p id="stats"></p>
+        <p id="itemsForSale"></p>
+        <select id="items">
+
+        </select>
+        <button onclick="purchase()">Purchase Item</button>
+        <button onclick="gameStart()">Next Hunt</button>
+    </div>
+</body>
+
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let intervalId = ''
+  function Anim(width, height, src, loop, x, y){
+        const grantIdle = new Image();
+        grantIdle.src = src;
+        const frameWidth = width;
+        const frameHeight = height;
+        
+        
+        let currentXFrame = 0;
+        let currentYFrame = 0;
+          let loopAnim = setInterval(() => {
+              // Clear the canvas
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+              // Draw the current frame
+              ctx.drawImage(
+                grantIdle,
+                currentXFrame * frameWidth,
+                currentYFrame * frameHeight,
+                frameWidth,
+                frameHeight,
+                x,
+                y,
+                frameWidth,
+                frameHeight
+              );
+            
+              // Increment the current frame
+              currentXFrame++;
+              // Reset to the first frame if we have reached the end of the sprite sheet
+              if (currentXFrame >= grantIdle.width / frameWidth) {
+                  if(currentYFrame == (grantIdle.height / frameHeight) -1){
+                    if(loop == true){
+                        currentXFrame = 0
+                        currentYFrame = 0
+                    } else {
+                        currentXFrame = 0
+                        currentYFrame = 0
+                        clearInterval(loopAnim);
+                         Anim(91, 122, "images/grant-idle.png", true, 150, 350)
+                    }
+                  } else {
+                      currentXFrame = 0
+                      currentYFrame++
+                    }
+              }
+            }, 60);
+            intervalId = loopAnim
+    }
+</script>
+
+
+
+<script>
+    function display() {
+        let start = document.getElementById('gameStart')
+        let combat = document.getElementById('combat')
+        let shop = document.getElementById('shop')
+        start.style.display = 'block'
+        combat.style.display = 'none'
+        shop.style.display = 'none'
+        Anim(91, 122, "images/grant-idle.png", true, 150, 350)
+    }
+    document.onload = display()
+</script>
+
+<script>
+    //loop and gameEnd variables
+    //used for transitioning scenes
+    let gameEnd = false;
+    let endLoop = false;
+
+    //probability function used for all random chance events
+    function probability(n) {
+        return Math.random() < n;
+    }
+
+    //takes a min and max and choose a random number between the two of them
+    function randomNumber(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+    //monster names array, add to it if you want
+    let names = [
+        'Barnos',
+        'Gajalaka',
+        'Gajau',
+        'Gastodon',
+        'Girros',
+        'Grimalkyne',
+        'Kestodon',
+        'Mernos',
+        'Noios',
+        'Raphinos',
+        'Rathalos',
+        'Jagras'
+    ];
+    //sets up the monster object used in combat
+    class Monster {
+        constructor(name, power, value) {
+            this.name = name;
+            this.power = power;
+            this.value = value;
+            this.hp
+            this.armor
+        }
+        //creates a new monster when the function is called
+        //always edit the values in here when you want to balance patch
+        newMonster() {
+            this.name = names[Math.floor(Math.random() * names.length)]
+            this.hp = randomNumber(100, 300);
+            this.armor = randomNumber(0, 30);
+            this.power = randomNumber(36, 60);
+            this.value = this.power;
+        }
+    }
+    //initalizes the monster object with default values
+    let monster = new Monster('', 0, 0, 0, 0)
+
+
+    //creates the player object
+    //all parameters are logged in here
+    class Hero {
+        constructor(name, hp, power, money, defense, wUpgrade, dUpgrade, monstersKilled) {
+            this.name = name;
+            this.hp = hp;
+            this.maxHP = hp;
+            this.power = power;
+            this.money = money;
+            this.defense = defense;
+            this.wUpgrade = wUpgrade;
+            this.dUpgrade = dUpgrade;
+            this.monstersKilled = monstersKilled;
+        }
+
+
+        attack() {
+            let nextTurn = document.getElementById('nextTurn')
+            let attackBut = document.getElementById('attack')
+            let defendBut = document.getElementById('defend')
+            action.innerHTML = `You attack the ${monster.name}`
+            let criticalHit = false;
+            if (probability(0.10)) {
+                criticalHit = true
+            }
+
+            if (!criticalHit) {
+                clearInterval(intervalId);
+                Anim(324, 193, "images/grant-attack.png", false, 70, 294)
+                monster.hp -= this.power - monster.armor
+                action.innerHTML += `<br>${monster.name} retaliates`;
+                this.hp -= monster.power - this.defense
+            } else if (criticalHit) {
+                clearInterval(intervalId);
+                Anim(304, 224, "images/grant-crit.png", false, 90, 264)
+                action.innerHTML += `<br>CRITICAL HIT!`;
+                monster.hp -= this.power
+                action.innerHTML += `<br>${monster.name} retaliates`;
+                this.hp -= monster.power - this.defense
+            }
+            attackBut.disabled = true;
+            defendBut.disabled = true;
+            nextTurn.disabled = false;
+        }
+
+        defend() {
+            clearInterval(intervalId);
+            Anim(137, 115, "images/grant-block.png", false, 150, 380)
+            let nextTurn = document.getElementById('nextTurn')
+            let attackBut = document.getElementById('attack')
+            let defendBut = document.getElementById('defend')
+            //this uses if statements to determine if a random event will occur
+            //add or edit these to make combat more enthralling
+            action.innerHTML = `You enter a ready stance anticipating the ${monster.name}'s next move`;
+            let parry = false;
+            if (probability(0.35)) {
+                parry = true
+            }
+            if (probability(0.50)) {
+                action.innerHTML += `<br>You narrowly escape the ${monster.name}'s attack`;
+            } else if (parry) {
+                action.innerHTML = `<br>You send ${monster.name}'s attack right back at it!!`;
+                monster.hp -= monster.power - monster.armor
+            } else if (probability(0.40)) {
+                //hp should always stack, unlless it's with a potion
+                action.innerHTML +=
+                    '<br>You manage to find time to recover some strength and enhance your body with magic';
+                action.innerHTML += '<br>+20 hp';
+                this.hp += 20;
+            } else {
+                action.innerHTML += `<br>${monster.name} attacks`;
+                this.hp -= monster.power - this.defense + 20
+            }
+            attackBut.disabled = true;
+            defendBut.disabled = true;
+            nextTurn.disabled = false;
+        }
+    }
+    //used during monster hunts to initiate combat
+    function combat() {
+        sMessage.innerHTML = ''
+        let start = document.getElementById('gameStart')
+        let combat = document.getElementById('combat')
+        let nextTurn = document.getElementById('nextTurn')
+        let attackBut = document.getElementById('attack')
+        let defendBut = document.getElementById('defend')
+        let shop = document.getElementById('shop')
+        nextTurn.disabled = true
+        defendBut.disabled = false;
+        attackBut.disabled = false;
+        start.style.display = 'none'
+        combat.style.display = 'block'
+        shop.style.display = 'none'
+        let status = document.getElementById('status')
+        let action = document.getElementById('action')
+        action.innerHTML = '';
+        status.innerHTML = 'Your hp is ' + player.hp + '/' + player.maxHP
+        let message = document.getElementById('message')
+        if (monster.hp > 0 && player.hp > 0) {
+            status.innerHTML += `<br>Would you like to Attack or Defend? `
+            //checks who dies first
+            //monster will always die first
+        } else if (monster.hp <= 0) {
+            attackBut.disabled = true;
+            defendBut.disabled = true;
+            nextTurn.disabled = true;
+            document.getElementById('combat').innerHTML +=
+                '<br><button id="toShop" onclick="postFight()" type="button">Continue...</button>'
+            message.innerHTML = `${monster.name} has been hunted`;
+            status.innerHTML = ''
+            action.innerHTML = ''
+            player.money += Math.floor(monster.value);
+            endLoop = true;
+            player.monstersKilled++
+        } else if (player.hp <= 0) {
+            alert('Game Over')
+        }
+    }
+    let player = new Hero('', 0, 0, 0, 0, 1, 1, 0)
+
+    function makePlayer() {
+        player.hp = 100
+        player.maxHP = 100
+        player.power = 40
+        player.money = 30
+        player.defense = 15
+        player.name = document.getElementById('name').value
+
+
+        gameStart()
+
+    }
+
+    //game loop variables
+    let turns = 0;
+    let storyEvent1 = false;
+
+
+
+    function gameStart() {
+        let message = document.getElementById('message')
+        //Hunting monsters
+        //diffculty scales
+        //story progression follows player.monstersKilled
+        if (player.monstersKilled < 1) {
+            message.innerHTML =
+                'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
+            monster.name = 'Jagras'
+            monster.power = 25
+            monster.value = 10
+            monster.armor = 0
+            monster.hp = 60
+            combat()
+        } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
+            //story event 1
+            //balance the boss to make it challengeing and fun
+            if (player.monstersKilled == 4) {
+                message.innerHTML = "You approach the den of a beast unlike any other you've seen"
+                message.innerHTML += "<br>As you approach it's wings unfurl in grandiose fashion"
+                message.innerHTML += "<br>The legendary monster SkyBreaker approaches!!!!!!!"
+                monster.name = 'SkyBreaker'
+                monster.power = 50
+                monster.hp = 500
+                monster.armor = 0
+                monster.value = 100
+                storyEvent1 = true;
+                combat()
+            } else {
+                monster.newMonster();
+                message.innerHTML = `-----${player.name} goes for a hunt!-----`
+                message.innerHTML += `<br>${monster.name} attacks!!`
+                combat()
+            }
+            //raises the monsters stats to scale with the player
+        } else if (player.monstersKilled >= 5) {
+            monster.newMonster();
+            monster.power += randomNumber(60, 80)
+            monster.hp += randomNumber(400, 600)
+            monster.armor += randomNumber(10, 40)
+            message.innerHTML = `-----${player.name} goes for a hunt!-----`
+            message.innerHTML += `<br>${monster.name} attacks!!`
+            combat()
+        }
+
+    }
+
+    let itemsForSale = [{
+            item: 'armor upgrade',
+            defense: 10,
+            price: 30 * player.dUpgrade
+        },
+        {
+            item: 'weapon upgrade',
+            power: 30,
+            price: 30 * player.wUpgrade
+        }
+    ]
+    //everything that happens after a hunt
+    //include merchant, story scenes, and will include save states
+    function postFight() {
+        if (document.getElementById("toShop")) {
+            document.getElementById("toShop").remove()
+        }
+        let stats = document.getElementById('stats')
+        //only active after the first story event
+        if (player.monstersKilled == 5) {
+            sMessage.innerHTML =("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
+            sMessage.innerHTML += ("<br>Your max hp increases by 100 and your weapon and armor improve");
+            player.maxHP += 100
+            player.power += 60
+            player.defense += 20
+            merchant()
+        } else {
+            merchant()
+        }
+        //shop function
+        function merchant() {
+            //resets player hp
+            player.hp = player.maxHP;
+            let start = document.getElementById('gameStart')
+            let combat = document.getElementById('combat')
+            let shop = document.getElementById('shop')
+            start.style.display = 'none'
+            combat.style.display = 'none'
+            shop.style.display = 'block'
+            message.innerHTML = 'Shopkeep: Hello there! Welcome to my shop, please have a look.'
+            stats.innerHTML = '<br>gold: ' + player.money + '<br>power: ' + Math.floor(player.power) + '<br>defense: ' +
+                Math.floor(player.defense)
+            //sets what items are for sale
+            //scales with the player's purchases
+            if (!document.getElementById('item')) {
+                for (let i = 0; i < itemsForSale.length; i++) {
+                    document.getElementById('items').innerHTML +=
+                        `<option id="item" value="${itemsForSale[i].item}">${itemsForSale[i].item}</option>`
+                }
+            }
+        }
+    }
+    //checks which item was purchased
+    //if the player doesn't have enough money they can't buy any "Sorry link I don't give credit"
+    //works fine, but will need to build on it when items are added
+    function purchase(item) {
+        item = document.getElementById('items').value
+
+        if (item == 'weapon upgrade') {
+            if (player.money >= itemsForSale[1].price) {
+                player.money -= itemsForSale[1].price
+                player.power += itemsForSale[1].power
+                itemsForSale[1].price += 20
+                postFight()
+            } else {
+                alert('not enough money')
+            }
+        } else if (item == 'armor upgrade') {
+            if (player.money >= itemsForSale[0].price) {
+                player.money -= itemsForSale[0].price
+                player.defense += itemsForSale[0].defense
+                itemsForSale[0].price += 20
+                postFight()
+            } else {
+                alert('not enough money')
+            }
+        }
+    }
+</script>
+
+</html>
