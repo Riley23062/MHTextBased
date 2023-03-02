@@ -45,6 +45,7 @@
     <div id="shop">
         <p id="stats"></p>
         <p id="itemsForSale"></p>
+        <img src="images/merchant.gif" style=" position: absolute; margin-top: -450px; margin-left: 120px; width: 20%; height: 20%;">
         <select id="items">
 
         </select>
@@ -282,7 +283,7 @@
             defendBut.disabled = true;
             nextTurn.disabled = true;
             document.getElementById('combat').innerHTML +=
-                '<br><button id="toShop" onclick="postFight()" type="button">Continue...</button>'
+                '<button id="toShop" onclick="postFight()" type="button">Continue...</button>'
             message.innerHTML = `${monster.name} has been hunted`;
             status.innerHTML = ''
             action.innerHTML = ''
@@ -319,8 +320,8 @@
         //Hunting monsters
         //diffculty scales
         //story progression follows player.monstersKilled
+        canvas.style.backgroundImage = "url('images/background.png')";
         if (player.monstersKilled < 1) {
-            canvas.style.backgroundImage = "url('images/background.png')";
             message.innerHTML =
                 'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
             monster.name = 'Jagras'
@@ -376,6 +377,8 @@
     //everything that happens after a hunt
     //include merchant, story scenes, and will include save states
     function postFight() {
+        canvas.style.backgroundImage = "";
+
         if (document.getElementById("toShop")) {
             document.getElementById("toShop").remove()
         }
