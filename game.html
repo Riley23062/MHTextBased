@@ -16,19 +16,18 @@
         display: block;
         background-repeat: no-repeat;
         background-size: cover;
-        background-position: center; 
+        background-position: center;
     }
-    
+
     body {
         text-align: center;
     }
-
 </style>
 
 <body>
-        <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3; "></canvas>
-        <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
-        <p style="text-align: center;" id="sMessage"></p>
+    <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3; "></canvas>
+    <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
+    <p style="text-align: center;" id="sMessage"></p>
     <div id="gameStart">
         <input type="text" id="name">
         <button id type="button" onclick="makePlayer()">Enter Name</button>
@@ -45,7 +44,8 @@
     <div id="shop">
         <p id="stats"></p>
         <p id="itemsForSale"></p>
-        <img src="images/merchant.gif" style=" position: absolute; margin-top: -450px; margin-left: 120px; width: 20%; height: 20%;">
+        <img src="images/merchant.gif"
+            style=" position: absolute; margin-top: -450px; margin-left: 120px; width: 20%; height: 20%;">
         <select id="items">
 
         </select>
@@ -58,21 +58,22 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let intervalId = ''
-  function Anim(width, height, src, loop, x, y){
+
+    function Anim(width, height, src, loop, x, y) {
         const player = new Image();
         player.src = src;
         const frameWidth = width;
         const frameHeight = height;
-        
-        
+
+
         let currentXFrame = 0;
         let currentYFrame = 0;
-          let loopAnim = setInterval(() => {
-              // Clear the canvas
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-              // Draw the current frame
-              ctx.drawImage(
+        let loopAnim = setInterval(() => {
+            // Clear the canvas
+            ctx.clearRect(x, y, width, height);
+
+            // Draw the current frame
+            ctx.drawImage(
                 player,
                 currentXFrame * frameWidth,
                 currentYFrame * frameHeight,
@@ -82,29 +83,29 @@
                 y,
                 frameWidth,
                 frameHeight
-              );
-            
-              // Increment the current frame
-              currentXFrame++;
-              // Reset to the first frame if we have reached the end of the sprite sheet
-              if (currentXFrame >= player.width / frameWidth) {
-                  if(currentYFrame == (player.height / frameHeight) -1){
-                    if(loop == true){
+            );
+
+            // Increment the current frame
+            currentXFrame++;
+            // Reset to the first frame if we have reached the end of the sprite sheet
+            if (currentXFrame >= player.width / frameWidth) {
+                if (currentYFrame == (player.height / frameHeight) - 1) {
+                    if (loop == true) {
                         currentXFrame = 0
                         currentYFrame = 0
                     } else {
                         currentXFrame = 0
                         currentYFrame = 0
                         clearInterval(loopAnim);
-                         Anim(91, 122, "images/grant-idle.png", true, 200, 350)
+                        Anim(91, 122, "images/grant-idle.png", true, 200, 350)
                     }
-                  } else {
-                      currentXFrame = 0
-                      currentYFrame++
-                    }
-              }
-            }, 60);
-            intervalId = loopAnim
+                } else {
+                    currentXFrame = 0
+                    currentYFrame++
+                }
+            }
+        }, 60);
+        intervalId = loopAnim
     }
 </script>
 
@@ -118,7 +119,7 @@
         start.style.display = 'block'
         combat.style.display = 'none'
         shop.style.display = 'none'
-        Anim(91, 122, "images/grant-idle.png", true, 200, 350)
+        //Anim(91, 122, "images/grant-idle.png", true, 200, 350)
     }
     document.onload = display()
 </script>
@@ -141,6 +142,7 @@
     //monster names array, add to it if you want
     let names = [
         'Barnos',
+        'Jagras',
         'Gajalaka',
         'Gajau',
         'Gastodon',
@@ -150,17 +152,22 @@
         'Mernos',
         'Noios',
         'Raphinos',
-        'Rathalos',
-        'Jagras'
+        'Rathalos'
     ];
+
+    let Msrcs = ['images/monsters/1.png', 'images/monsters/2.png', 'images/monsters/3.png', 'images/monsters/4.png',
+        'images/monsters/5.png', 'images/monsters/6.png', 'images/monsters/7.png', 'images/monsters/8.png',
+        'images/monsters/9.png', 'images/monsters/10.png', 'images/monsters/11.png', 'images/monsters/12.png'
+    ]
     //sets up the monster object used in combat
     class Monster {
-        constructor(name, power, value) {
-            this.name = name;
-            this.power = power;
-            this.value = value;
+        constructor() {
+            this.name
+            this.power
+            this.value
             this.hp
             this.armor
+            this.src
         }
         //creates a new monster when the function is called
         //always edit the values in here when you want to balance patch
@@ -170,10 +177,11 @@
             this.armor = randomNumber(0, 30);
             this.power = randomNumber(36, 60);
             this.value = this.power;
+            this.src = Msrcs[names.indexOf(this.name)]
         }
     }
     //initalizes the monster object with default values
-    let monster = new Monster('', 0, 0, 0, 0)
+    let monster = new Monster()
 
 
     //creates the player object
@@ -204,7 +212,7 @@
 
             if (!criticalHit) {
                 clearInterval(intervalId);
-                Anim(324, 193, "images/grant-attack.png", false, 120, 294)
+              //  Anim(324, 193, "images/grant-attack.png", false, 120, 294)
                 monster.hp -= this.power - monster.armor
                 action.innerHTML += `<br>${monster.name} retaliates`;
                 this.hp -= monster.power - this.defense
@@ -223,7 +231,7 @@
 
         defend() {
             clearInterval(intervalId);
-            Anim(137, 115, "images/grant-block.png", false, 200, 380)
+          //  Anim(137, 115, "images/grant-block.png", false, 200, 360)
             let nextTurn = document.getElementById('nextTurn')
             let attackBut = document.getElementById('attack')
             let defendBut = document.getElementById('defend')
@@ -290,6 +298,7 @@
             player.money += Math.floor(monster.value);
             endLoop = true;
             player.monstersKilled++
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         } else if (player.hp <= 0) {
             alert('Game Over')
         }
@@ -320,7 +329,7 @@
         //Hunting monsters
         //diffculty scales
         //story progression follows player.monstersKilled
-        canvas.style.backgroundImage = "url('images/background.png')";
+        //canvas.style.backgroundImage = "url('images/background.png')";
         if (player.monstersKilled < 1) {
             message.innerHTML =
                 'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
@@ -329,6 +338,10 @@
             monster.value = 10
             monster.armor = 0
             monster.hp = 60
+            monster.src = Msrcs[1]
+            let monsterimage = new Image()
+            monsterimage.src = monster.src
+            ctx.drawImage(monsterimage, 500, 370, 100, 100)
             combat()
         } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
             //story event 1
@@ -348,6 +361,10 @@
                 monster.newMonster();
                 message.innerHTML = `-----${player.name} goes for a hunt!-----`
                 message.innerHTML += `<br>${monster.name} attacks!!`
+                console.log(monster.src)
+                let monsterimage = new Image()
+                monsterimage.src = monster.src
+                ctx.drawImage(monsterimage, 500, 370, 100, 100)
                 combat()
             }
             //raises the monsters stats to scale with the player
@@ -385,7 +402,8 @@
         let stats = document.getElementById('stats')
         //only active after the first story event
         if (player.monstersKilled == 5) {
-            sMessage.innerHTML =("You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
+            sMessage.innerHTML = (
+                "You deliver the monster's head to the guild, suprised as ever they promote you to elite rank");
             sMessage.innerHTML += ("<br>Your max hp increases by 100 and your weapon and armor improve");
             player.maxHP = 200
             player.power += 60
