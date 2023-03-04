@@ -24,7 +24,7 @@
     }
 </style>
 
-<body>
+<body onload="display()">
     <canvas id="canvas" width="800" height="600" style="border:1px solid #d3d3d3; "></canvas>
     <p style="text-align: center;" id="message">Welcome to MHTextBased please enter a name</p>
     <p style="text-align: center;" id="sMessage"></p>
@@ -44,8 +44,6 @@
     <div id="shop">
         <p id="stats"></p>
         <p id="itemsForSale"></p>
-        <img src="images/merchant.gif"
-            style=" position: absolute; margin-top: -450px; margin-left: 120px; width: 20%; height: 20%;">
         <select id="items">
 
         </select>
@@ -58,22 +56,20 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let intervalId = ''
-
-    function Anim(width, height, src, loop, x, y, monster) {
-
-        if(monster != true){
-
+    let mInterval = ''
+    let merchantCheck = false;
+    let monsterDead = false;
+    function Anim(width, height, src, loop, x, y) {
             const player = new Image();
             player.src = src;
             const frameWidth = width;
             const frameHeight = height;
             
-            
             let currentXFrame = 0;
             let currentYFrame = 0;
            let loopAnim = setInterval(() => {
             // Clear the canvas
-            ctx.clearRect(x-1, y-1, width, height+100);
+            ctx.clearRect(x-1, y-1, width+20, height+100);
             
             // Draw the current frame
             ctx.drawImage(
@@ -109,12 +105,23 @@
             }
         }, 60);
         intervalId = loopAnim
-    } else {
-        let monsterimage = new Image()
-        monsterimage.src = src
-        ctx.drawImage(monsterimage, x, y, width, height)
         
     }
+
+    function monsterAnim(src, width, height, x, y) {
+        let monsterimage = new Image()
+        monsterimage.src = src
+      let interval =  setInterval(() => {
+            ctx.clearRect(x, y, width, height);
+            // Draw the current frame
+            ctx.drawImage(monsterimage, x, y, width, height)
+        if (monsterDead){
+            clearInterval(interval)
+            ctx.clearRect(x, y, width, height);
+        }
+                
+        }, 60);
+        mInterval = interval
     }
 </script>
 
@@ -128,9 +135,7 @@
         start.style.display = 'block'
         combat.style.display = 'none'
         shop.style.display = 'none'
-        Anim(91, 122, "images/grant-idle.png", true, 200, 350)
     }
-    document.onload = display()
 </script>
 
 <script>
@@ -138,7 +143,6 @@
     //used for transitioning scenes
     let gameEnd = false;
     let endLoop = false;
-
     //probability function used for all random chance events
     function probability(n) {
         return Math.random() < n;
@@ -240,7 +244,7 @@
 
         defend() {
             clearInterval(intervalId);
-           Anim(137, 115, "images/grant-block.png", false, 200, 360)
+           Anim(137, 130, "images/grant-block.png", false, 180, 340)
             let nextTurn = document.getElementById('nextTurn')
             let attackBut = document.getElementById('attack')
             let defendBut = document.getElementById('defend')
@@ -273,16 +277,20 @@
     }
     //used during monster hunts to initiate combat
     function combat() {
+        monsterDead = false
         if(     document.getElementById('startHunt')){
             document.getElementById('startHunt').remove()
-        }
-        Anim(100, 100, monster.src, false, 500, 370, true)
+            clearInterval(intervalId);
+            Anim(91, 122, "images/grant-idle.png", true, 200, 350)
+        } 
+            monsterAnim(monster.src, 170, 160, 470, 320)
+ 
         sMessage.innerHTML = ''
         let combat = document.getElementById('combat')
         let nextTurn = document.getElementById('nextTurn')
         let attackBut = document.getElementById('attack')
         let defendBut = document.getElementById('defend')
-        nextTurn.disabled = true
+        nextTurn.disabled = true;
         defendBut.disabled = false;
         attackBut.disabled = false;
         let status = document.getElementById('status')
@@ -298,6 +306,7 @@
             attackBut.disabled = true;
             defendBut.disabled = true;
             nextTurn.disabled = true;
+            monsterDead = true
             document.getElementById('combat').innerHTML +=
                 '<button id="toShop" onclick="postFight()" type="button">Continue...</button>'
             message.innerHTML = `${monster.name} has been hunted`;
@@ -306,6 +315,7 @@
             player.money += Math.floor(monster.value);
             endLoop = true;
             player.monstersKilled++
+            clearInterval(mInterval);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         } else if (player.hp <= 0) {
             alert('Game Over')
@@ -340,6 +350,7 @@
         let nextTurn = document.getElementById('nextTurn')
         let attackBut = document.getElementById('attack')
         let defendBut = document.getElementById('defend')
+        merchantCheck = false
         nextTurn.disabled = true;
         defendBut.disabled = true;
         attackBut.disabled = true;
@@ -372,6 +383,7 @@
                 monster.hp = 500
                 monster.armor = 0
                 monster.value = 100
+                monster.src = 'images/monsters/boss1.png'
                 storyEvent1 = true;
             } else {
                 monster.newMonster();
@@ -404,8 +416,8 @@
     //everything that happens after a hunt
     //include merchant, story scenes, and will include save states
     function postFight() {
+        merchantCheck = true
         canvas.style.backgroundImage = "";
-
         if (document.getElementById("toShop")) {
             document.getElementById("toShop").remove()
         }
@@ -424,7 +436,21 @@
         }
         //shop function
         function merchant() {
+            let merchImage = new Image()
+            merchImage.src = 'images/merchant.gif'
             //resets player hp
+           let merchAnim = setInterval(() => {
+            // Clear the canvas
+            ctx.clearRect(320, 320, merchImage.width, merchImage.height);
+            // Draw the current frame
+            ctx.drawImage(merchImage,380, 320, 230, 200)
+            if(merchantCheck == false){
+            clearInterval(merchAnim)
+            ctx.clearRect(380, 320, 230, 200);
+        }
+        }, 60);
+    
+
             player.hp = player.maxHP;
             let start = document.getElementById('gameStart')
             let combat = document.getElementById('combat')
