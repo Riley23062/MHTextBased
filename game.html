@@ -59,19 +59,22 @@
     const ctx = canvas.getContext("2d");
     let intervalId = ''
 
-    function Anim(width, height, src, loop, x, y) {
-        const player = new Image();
-        player.src = src;
-        const frameWidth = width;
-        const frameHeight = height;
+    function Anim(width, height, src, loop, x, y, monster) {
 
+        if(monster != true){
 
-        let currentXFrame = 0;
-        let currentYFrame = 0;
-        let loopAnim = setInterval(() => {
+            const player = new Image();
+            player.src = src;
+            const frameWidth = width;
+            const frameHeight = height;
+            
+            
+            let currentXFrame = 0;
+            let currentYFrame = 0;
+           let loopAnim = setInterval(() => {
             // Clear the canvas
-            ctx.clearRect(x, y, width, height);
-
+            ctx.clearRect(x-1, y-1, width, height+100);
+            
             // Draw the current frame
             ctx.drawImage(
                 player,
@@ -83,11 +86,11 @@
                 y,
                 frameWidth,
                 frameHeight
-            );
-
-            // Increment the current frame
-            currentXFrame++;
-            // Reset to the first frame if we have reached the end of the sprite sheet
+                );
+                
+                // Increment the current frame
+                currentXFrame++;
+                // Reset to the first frame if we have reached the end of the sprite sheet
             if (currentXFrame >= player.width / frameWidth) {
                 if (currentYFrame == (player.height / frameHeight) - 1) {
                     if (loop == true) {
@@ -106,6 +109,12 @@
             }
         }, 60);
         intervalId = loopAnim
+    } else {
+        let monsterimage = new Image()
+        monsterimage.src = src
+        ctx.drawImage(monsterimage, x, y, width, height)
+        
+    }
     }
 </script>
 
@@ -119,7 +128,7 @@
         start.style.display = 'block'
         combat.style.display = 'none'
         shop.style.display = 'none'
-        //Anim(91, 122, "images/grant-idle.png", true, 200, 350)
+        Anim(91, 122, "images/grant-idle.png", true, 200, 350)
     }
     document.onload = display()
 </script>
@@ -212,7 +221,7 @@
 
             if (!criticalHit) {
                 clearInterval(intervalId);
-              //  Anim(324, 193, "images/grant-attack.png", false, 120, 294)
+              Anim(324, 193, "images/grant-attack.png", false, 120, 294)
                 monster.hp -= this.power - monster.armor
                 action.innerHTML += `<br>${monster.name} retaliates`;
                 this.hp -= monster.power - this.defense
@@ -231,7 +240,7 @@
 
         defend() {
             clearInterval(intervalId);
-          //  Anim(137, 115, "images/grant-block.png", false, 200, 360)
+           Anim(137, 115, "images/grant-block.png", false, 200, 360)
             let nextTurn = document.getElementById('nextTurn')
             let attackBut = document.getElementById('attack')
             let defendBut = document.getElementById('defend')
@@ -264,19 +273,18 @@
     }
     //used during monster hunts to initiate combat
     function combat() {
+        if(     document.getElementById('startHunt')){
+            document.getElementById('startHunt').remove()
+        }
+        Anim(100, 100, monster.src, false, 500, 370, true)
         sMessage.innerHTML = ''
-        let start = document.getElementById('gameStart')
         let combat = document.getElementById('combat')
         let nextTurn = document.getElementById('nextTurn')
         let attackBut = document.getElementById('attack')
         let defendBut = document.getElementById('defend')
-        let shop = document.getElementById('shop')
         nextTurn.disabled = true
         defendBut.disabled = false;
         attackBut.disabled = false;
-        start.style.display = 'none'
-        combat.style.display = 'block'
-        shop.style.display = 'none'
         let status = document.getElementById('status')
         let action = document.getElementById('action')
         action.innerHTML = '';
@@ -326,10 +334,23 @@
 
     function gameStart() {
         let message = document.getElementById('message')
+        let start = document.getElementById('gameStart')
+        let combat = document.getElementById('combat')
+        let shop = document.getElementById('shop')
+        let nextTurn = document.getElementById('nextTurn')
+        let attackBut = document.getElementById('attack')
+        let defendBut = document.getElementById('defend')
+        nextTurn.disabled = true;
+        defendBut.disabled = true;
+        attackBut.disabled = true;
+        start.style.display = 'none'
+        combat.style.display = 'block'
+        shop.style.display = 'none'
+        combat.innerHTML += '<button id="startHunt" onclick="combat()" type="button">Begin Hunt</button>'
         //Hunting monsters
         //diffculty scales
         //story progression follows player.monstersKilled
-        //canvas.style.backgroundImage = "url('images/background.png')";
+        canvas.style.backgroundImage = "url('images/background.png')";
         if (player.monstersKilled < 1) {
             message.innerHTML =
                 'Your first hunt will be a very easy one, your defense will take away some of the monsters power, so you just have to overpower it'
@@ -339,10 +360,6 @@
             monster.armor = 0
             monster.hp = 60
             monster.src = Msrcs[1]
-            let monsterimage = new Image()
-            monsterimage.src = monster.src
-            ctx.drawImage(monsterimage, 500, 370, 100, 100)
-            combat()
         } else if (player.monstersKilled < 5 && player.monstersKilled > 0) {
             //story event 1
             //balance the boss to make it challengeing and fun
@@ -356,16 +373,11 @@
                 monster.armor = 0
                 monster.value = 100
                 storyEvent1 = true;
-                combat()
             } else {
                 monster.newMonster();
                 message.innerHTML = `-----${player.name} goes for a hunt!-----`
                 message.innerHTML += `<br>${monster.name} attacks!!`
                 console.log(monster.src)
-                let monsterimage = new Image()
-                monsterimage.src = monster.src
-                ctx.drawImage(monsterimage, 500, 370, 100, 100)
-                combat()
             }
             //raises the monsters stats to scale with the player
         } else if (player.monstersKilled >= 5) {
@@ -375,9 +387,7 @@
             monster.armor += randomNumber(10, 40)
             message.innerHTML = `-----${player.name} goes for a hunt!-----`
             message.innerHTML += `<br>${monster.name} attacks!!`
-            combat()
         }
-
     }
 
     let itemsForSale = [{
