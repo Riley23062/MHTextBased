@@ -36,6 +36,7 @@
         <form id="selectChar">
             <input type="radio" name="char" value="0">Grant
             <input type="radio" name="char" value="1">Genjurou
+            <input type="radio" name="char" value="2">Kyoshiro
         </form>
         <button id type="button" onclick="makePlayer()">Start Game</button>
     </div>
@@ -80,7 +81,7 @@
             ctx.clearRect(x, y, width, height);
         }
                 
-        }, 60);
+        }, 70);
         mInterval = interval
     }
 </script>
@@ -171,6 +172,7 @@
             this.wUpgrade = wUpgrade;
             this.dUpgrade = dUpgrade;
             this.monstersKilled = monstersKilled;
+            this.critrate = 0.10
             this.characterImages = [{
                  idle: [91, 122, "images/grant-idle.png", true, 200, 350],
                  attack: [260, 193, "images/grant-attack.png", false, 145, 289],
@@ -183,7 +185,16 @@
                 attack: [171, 144, "images/genjurou-attack.png", false, 180, 340],
                 block: [110, 109, "images/genjurou-block.png", false, 200, 375],
                 crit: [163, 188, "images/genjurou-crit.png", false, 150, 300]
-            }]
+            },
+        
+            {idle: [140, 160, "images/kyoshiro-idle.png", true, 200, 320],
+                attack: [184, 183, "images/kyoshiro-attack.png", false, 160, 300],
+                block: [238, 160, "images/kyoshiro-block.png", false, 160, 320],
+                crit: [235, 135, "images/kyoshiro-crit.png", false, 180, 350]}
+
+        
+        ]
+
             this.characterIndex = 0
         }
 
@@ -194,7 +205,7 @@
             let defendBut = document.getElementById('defend')
             action.innerHTML = `You attack the ${monster.name}`
             let criticalHit = false;
-            if (probability(0.10)) {
+            if (probability(this.critrate)) {
                 criticalHit = true
             }
 
@@ -203,14 +214,26 @@
                 Anim(player.characterImages[player.characterIndex].attack[0], player.characterImages[player.characterIndex].attack[1], player.characterImages[player.characterIndex].attack[2], player.characterImages[player.characterIndex].attack[3], player.characterImages[player.characterIndex].attack[4], player.characterImages[player.characterIndex].attack[5])
                 monster.hp -= this.power - monster.armor
                 action.innerHTML += `<br>${monster.name} retaliates`;
-                this.hp -= monster.power - this.defense
+                if(monster.power <= this.defense){
+                    this.hp -= 5
+                } else {
+                    this.hp -= monster.power - this.defense
+                }
             } else if (criticalHit) {
                 clearInterval(intervalId);
                 Anim(player.characterImages[player.characterIndex].crit[0], player.characterImages[player.characterIndex].crit[1], player.characterImages[player.characterIndex].crit[2], player.characterImages[player.characterIndex].crit[3], player.characterImages[player.characterIndex].crit[4], player.characterImages[player.characterIndex].crit[5])
                 action.innerHTML += `<br>CRITICAL HIT!`;
-                monster.hp -= this.power
+                if(this.characterIndex == 1){
+                    monster.hp -= (this.power * 3) - monster.armor
+                } else {
+                    monster.hp -= (this.power * 2) - monster.armor
+                }
                 action.innerHTML += `<br>${monster.name} retaliates`;
-                this.hp -= monster.power - this.defense
+                if(monster.power <= this.defense){
+                    this.hp -= 5
+                } else {
+                    this.hp -= monster.power - this.defense
+                }
             }
             attackBut.disabled = true;
             defendBut.disabled = true;
@@ -243,7 +266,11 @@
                 this.hp += 20;
             } else {
                 action.innerHTML += `<br>${monster.name} attacks`;
-                this.hp -= monster.power - this.defense + 20
+                if(monster.power <= this.defense + 20){
+                    this.hp -= 5
+                } else {
+                    this.hp -= monster.power - this.defense + 20
+                }
             }
             attackBut.disabled = true;
             defendBut.disabled = true;
@@ -341,28 +368,46 @@
 
                 if(charSet == true){
                     clearInterval(loopAnim)
-                    ctx.clearRect(x, y, width, height);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
-            }, 60);
+            }, 70);
         }
         ctx.fillText("Grant", 230, 510);
-        ctx.fillText("Genjurou", 520, 510);
+        ctx.fillText("Genjurou", 380, 510);
+        ctx.fillText("Kyoshiro", 520, 510);
         createIdle(91, 122, "images/grant-idle.png", true, 200, 350)
-        createIdle(108, 112, "images/genjurou-idle.png", true, 500, 360)
+        createIdle(108, 112, "images/genjurou-idle.png", true, 350, 360)
+        createIdle(140, 160, "images/kyoshiro-idle.png", true, 480, 310)
     }
 
     function makePlayer() {
-        player.hp = 100
-        player.maxHP = 100
-        player.power = 40
-        player.money = 30
-        player.defense = 15
         player.name = document.getElementById('name').value
         var char = document.getElementsByName('char');
         for(i = 0; i < char.length; i++) {
             if(char[i].checked){
            player.characterIndex = char[i].value
            }
+        }
+
+        if(player.characterIndex == 0){
+        player.hp = 100
+        player.maxHP = 100
+        player.power = 30
+        player.money = 30
+        player.defense = 20
+        }else if (player.characterIndex == 1){
+        player.hp = 60
+        player.maxHP = 60
+        player.power = 50
+        player.money = 30
+        player.defense = 15
+        player.critrate = 0.30
+        }else if (player.characterIndex == 2){
+        player.hp = 160
+        player.maxHP = 160
+        player.power = 15
+        player.money = 30
+        player.defense = 30
         }
 
         charSet = true
