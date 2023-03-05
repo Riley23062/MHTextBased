@@ -179,10 +179,10 @@
 },
 
 {
-                idle: [108, 112, "images/genjurou-idle.png", true, 200, 350],
-                attack: [171, 144, "images/genjurou-attack.png", false, 180, 320],
-                block: [110, 109, "images/genjurou-block.png", false, 200, 355],
-                crit: [163, 188, "images/genjurou-crit.png", false, 150, 280]
+                idle: [108, 112, "images/genjurou-idle.png", true, 200, 370],
+                attack: [171, 144, "images/genjurou-attack.png", false, 180, 340],
+                block: [110, 109, "images/genjurou-block.png", false, 200, 375],
+                crit: [163, 188, "images/genjurou-crit.png", false, 150, 300]
             }]
             this.characterIndex = 0
         }
@@ -310,7 +310,7 @@
                 let currentYFrame = 0;
                 let loopAnim = setInterval(() => {
                 // Clear the canvas
-                ctx.clearRect(x-1, y-1, width+20, height+100);
+                ctx.clearRect(x, y, width, height);
                 
                 // Draw the current frame
                 ctx.drawImage(
@@ -345,10 +345,10 @@
                 }
             }, 60);
         }
-        ctx.fillText("Grant", 200, 300);
-        ctx.fillText("Genjurou", 550, 300);
+        ctx.fillText("Grant", 230, 510);
+        ctx.fillText("Genjurou", 520, 510);
         createIdle(91, 122, "images/grant-idle.png", true, 200, 350)
-        createIdle(108, 112, "images/genjurou-idle.png", true, 500, 350)
+        createIdle(108, 112, "images/genjurou-idle.png", true, 500, 360)
     }
 
     function makePlayer() {
