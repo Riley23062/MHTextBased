@@ -30,7 +30,14 @@
     <p style="text-align: center;" id="sMessage"></p>
     <div id="gameStart">
         <input type="text" id="name">
-        <button id type="button" onclick="makePlayer()">Enter Name</button>
+        <br>
+        Select A Character
+        <br>
+        <form id="selectChar">
+            <input type="radio" name="char" value="0">Grant
+            <input type="radio" name="char" value="1">Genjurou
+        </form>
+        <button id type="button" onclick="makePlayer()">Start Game</button>
     </div>
 
     <div id="combat">
@@ -59,54 +66,7 @@
     let mInterval = ''
     let merchantCheck = false;
     let monsterDead = false;
-    function Anim(width, height, src, loop, x, y) {
-            const player = new Image();
-            player.src = src;
-            const frameWidth = width;
-            const frameHeight = height;
-            
-            let currentXFrame = 0;
-            let currentYFrame = 0;
-           let loopAnim = setInterval(() => {
-            // Clear the canvas
-            ctx.clearRect(x-1, y-1, width+20, height+100);
-            
-            // Draw the current frame
-            ctx.drawImage(
-                player,
-                currentXFrame * frameWidth,
-                currentYFrame * frameHeight,
-                frameWidth,
-                frameHeight,
-                x,
-                y,
-                frameWidth,
-                frameHeight
-                );
-                
-                // Increment the current frame
-                currentXFrame++;
-                // Reset to the first frame if we have reached the end of the sprite sheet
-            if (currentXFrame >= player.width / frameWidth) {
-                if (currentYFrame == (player.height / frameHeight) - 1) {
-                    if (loop == true) {
-                        currentXFrame = 0
-                        currentYFrame = 0
-                    } else {
-                        currentXFrame = 0
-                        currentYFrame = 0
-                        clearInterval(loopAnim);
-                        Anim(91, 122, "images/grant-idle.png", true, 200, 350)
-                    }
-                } else {
-                    currentXFrame = 0
-                    currentYFrame++
-                }
-            }
-        }, 60);
-        intervalId = loopAnim
-        
-    }
+    let charSet = false;
 
     function monsterAnim(src, width, height, x, y) {
         let monsterimage = new Image()
@@ -135,6 +95,7 @@
         start.style.display = 'block'
         combat.style.display = 'none'
         shop.style.display = 'none'
+        characterSelect()
     }
 </script>
 
@@ -210,6 +171,20 @@
             this.wUpgrade = wUpgrade;
             this.dUpgrade = dUpgrade;
             this.monstersKilled = monstersKilled;
+            this.characterImages = [{
+                 idle: [91, 122, "images/grant-idle.png", true, 200, 350],
+                 attack: [260, 193, "images/grant-attack.png", false, 145, 289],
+                 block: [137, 130, "images/grant-block.png", false, 180, 340],
+                 crit: [304, 224, "images/grant-crit.png", false, 140, 264]
+},
+
+{
+                idle: [108, 112, "images/genjurou-idle.png", true, 200, 350],
+                attack: [171, 144, "images/genjurou-attack.png", false, 180, 320],
+                block: [110, 109, "images/genjurou-block.png", false, 200, 355],
+                crit: [163, 188, "images/genjurou-crit.png", false, 150, 280]
+            }]
+            this.characterIndex = 0
         }
 
 
@@ -225,13 +200,13 @@
 
             if (!criticalHit) {
                 clearInterval(intervalId);
-              Anim(324, 193, "images/grant-attack.png", false, 120, 294)
+                Anim(player.characterImages[player.characterIndex].attack[0], player.characterImages[player.characterIndex].attack[1], player.characterImages[player.characterIndex].attack[2], player.characterImages[player.characterIndex].attack[3], player.characterImages[player.characterIndex].attack[4], player.characterImages[player.characterIndex].attack[5])
                 monster.hp -= this.power - monster.armor
                 action.innerHTML += `<br>${monster.name} retaliates`;
                 this.hp -= monster.power - this.defense
             } else if (criticalHit) {
                 clearInterval(intervalId);
-                Anim(304, 224, "images/grant-crit.png", false, 140, 264)
+                Anim(player.characterImages[player.characterIndex].crit[0], player.characterImages[player.characterIndex].crit[1], player.characterImages[player.characterIndex].crit[2], player.characterImages[player.characterIndex].crit[3], player.characterImages[player.characterIndex].crit[4], player.characterImages[player.characterIndex].crit[5])
                 action.innerHTML += `<br>CRITICAL HIT!`;
                 monster.hp -= this.power
                 action.innerHTML += `<br>${monster.name} retaliates`;
@@ -244,7 +219,7 @@
 
         defend() {
             clearInterval(intervalId);
-           Anim(137, 130, "images/grant-block.png", false, 180, 340)
+            Anim(player.characterImages[player.characterIndex].block[0], player.characterImages[player.characterIndex].block[1], player.characterImages[player.characterIndex].block[2], player.characterImages[player.characterIndex].block[3], player.characterImages[player.characterIndex].block[4], player.characterImages[player.characterIndex].block[5])
             let nextTurn = document.getElementById('nextTurn')
             let attackBut = document.getElementById('attack')
             let defendBut = document.getElementById('defend')
@@ -281,7 +256,7 @@
         if(     document.getElementById('startHunt')){
             document.getElementById('startHunt').remove()
             clearInterval(intervalId);
-            Anim(91, 122, "images/grant-idle.png", true, 200, 350)
+            Anim(player.characterImages[player.characterIndex].idle[0], player.characterImages[player.characterIndex].idle[1], player.characterImages[player.characterIndex].idle[2], player.characterImages[player.characterIndex].idle[3], player.characterImages[player.characterIndex].idle[4], player.characterImages[player.characterIndex].idle[5])
         } 
             monsterAnim(monster.src, 170, 160, 470, 320)
  
@@ -315,7 +290,6 @@
             player.money += Math.floor(monster.value);
             endLoop = true;
             player.monstersKilled++
-            clearInterval(mInterval);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         } else if (player.hp <= 0) {
             alert('Game Over')
@@ -324,6 +298,59 @@
     }
     let player = new Hero('', 0, 0, 0, 0, 1, 1, 0)
 
+
+    function characterSelect(){
+        function createIdle(width, height, src, loop, x, y){
+            const playerImg = new Image();
+                playerImg.src = src;
+                const frameWidth = width;
+                const frameHeight = height;
+                
+                let currentXFrame = 0;
+                let currentYFrame = 0;
+                let loopAnim = setInterval(() => {
+                // Clear the canvas
+                ctx.clearRect(x-1, y-1, width+20, height+100);
+                
+                // Draw the current frame
+                ctx.drawImage(
+                    playerImg,
+                    currentXFrame * frameWidth,
+                    currentYFrame * frameHeight,
+                    frameWidth,
+                    frameHeight,
+                    x,
+                    y,
+                    frameWidth,
+                    frameHeight
+                    );
+                    
+                    // Increment the current frame
+                    currentXFrame++;
+                    // Reset to the first frame if we have reached the end of the sprite sheet
+                if (currentXFrame >= playerImg.width / frameWidth) {
+                    if (currentYFrame == (playerImg.height / frameHeight) - 1) {
+                        
+                            currentXFrame = 0
+                            currentYFrame = 0
+                    } else {
+                        currentXFrame = 0
+                        currentYFrame++
+                    }
+                }
+
+                if(charSet == true){
+                    clearInterval(loopAnim)
+                    ctx.clearRect(x, y, width, height);
+                }
+            }, 60);
+        }
+        ctx.fillText("Grant", 200, 300);
+        ctx.fillText("Genjurou", 550, 300);
+        createIdle(91, 122, "images/grant-idle.png", true, 200, 350)
+        createIdle(108, 112, "images/genjurou-idle.png", true, 500, 350)
+    }
+
     function makePlayer() {
         player.hp = 100
         player.maxHP = 100
@@ -331,7 +358,14 @@
         player.money = 30
         player.defense = 15
         player.name = document.getElementById('name').value
+        var char = document.getElementsByName('char');
+        for(i = 0; i < char.length; i++) {
+            if(char[i].checked){
+           player.characterIndex = char[i].value
+           }
+        }
 
+        charSet = true
 
         gameStart()
 
@@ -340,6 +374,59 @@
     //game loop variables
     let turns = 0;
     let storyEvent1 = false;
+
+
+
+    function Anim(width, height, src, loop, x, y) {
+            const playerImg = new Image();
+            playerImg.src = src;
+            const frameWidth = width;
+            const frameHeight = height;
+            
+            let currentXFrame = 0;
+            let currentYFrame = 0;
+            let loopAnim = setInterval(() => {
+            // Clear the canvas
+            ctx.clearRect(x-1, y-1, width+20, height+100);
+            
+            // Draw the current frame
+            ctx.drawImage(
+                playerImg,
+                currentXFrame * frameWidth,
+                currentYFrame * frameHeight,
+                frameWidth,
+                frameHeight,
+                x,
+                y,
+                frameWidth,
+                frameHeight
+                );
+                
+                // Increment the current frame
+                currentXFrame++;
+                // Reset to the first frame if we have reached the end of the sprite sheet
+            if (currentXFrame >= playerImg.width / frameWidth) {
+                if (currentYFrame == (playerImg.height / frameHeight) - 1) {
+                    if (loop == true) {
+                        currentXFrame = 0
+                        currentYFrame = 0
+                    } else {
+                        currentXFrame = 0
+                        currentYFrame = 0
+                        clearInterval(loopAnim);
+                        Anim(player.characterImages[player.characterIndex].idle[0], player.characterImages[player.characterIndex].idle[1], player.characterImages[player.characterIndex].idle[2], player.characterImages[player.characterIndex].idle[3], player.characterImages[player.characterIndex].idle[4], player.characterImages[player.characterIndex].idle[5])
+                    }
+                } else {
+                    currentXFrame = 0
+                    currentYFrame++
+                }
+            }
+        }, 60);
+        intervalId = loopAnim
+        
+    }
+
+
 
 
 
